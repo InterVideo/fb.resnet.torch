@@ -8,14 +8,22 @@ local t = require '../datasets/transforms'
 
 local feature_extractor = {}
 
-function feature_extractor.extract_features(model_name, list_of_base64_images)
+function feature_extractor.extract_features(model_name, dir_path, batch_size)
     -- get the list of files
     local list_of_filenames = {}
     local batch_size = 1
 
-    for i=1, #list_of_base64_images do
-        f = list_of_base64_images[i]
-        table.insert(list_of_filenames, f)
+    -- for i=1, #list_of_base64_images do
+    --     f = list_of_base64_images[i]
+    --     table.insert(list_of_filenames, f)
+    -- end
+
+    local lfs  = require 'lfs'
+
+    for file in lfs.dir(dir_path) do -- get the list of the files
+        if file~="." and file~=".." then
+            table.insert(list_of_filenames, dir_path..'/'..file)
+        end
     end
 
     local number_of_files = #list_of_filenames
