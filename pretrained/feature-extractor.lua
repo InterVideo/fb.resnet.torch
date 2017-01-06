@@ -22,7 +22,7 @@ function feature_extractor.extract_features(model_name, dir_path, batch_size)
 
     for file in lfs.dir(dir_path) do -- get the list of the files
         if file~="." and file~=".." then
-            table.insert(list_of_filenames, dir_path..'/'..file)
+            table.insert(list_of_filenames, dir_path .. '/' .. file)
         end
     end
 
@@ -65,8 +65,6 @@ function feature_extractor.extract_features(model_name, dir_path, batch_size)
             if img_name  ~= nil then
                 image_count = image_count + 1
 
-                -- TODO
-                -- Transform base64 images to standard Torch7 tensors
                 local img = image.load(img_name, 3, 'float')
                 img = transform(img)
                 img_batch[{j, {}, {}, {} }] = img
@@ -93,7 +91,8 @@ function feature_extractor.extract_features(model_name, dir_path, batch_size)
 
     end
 
-    return {features=features, image_list=list_of_filenames}
+    -- return {features=features, image_list=list_of_filenames}
+    return {features=torch.serialize(features), image_list=list_of_filenames}
 end
 
 return feature_extractor

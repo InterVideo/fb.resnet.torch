@@ -1,0 +1,12 @@
+{
+  "stdin_port": 21501, 
+  "ip": "127.0.0.1", 
+  "control_port": 48775, 
+  "hb_port": 18981, 
+  "signature_scheme": "hmac-sha256", 
+  "key": "cd17ef87-3bd4-401c-af8f-5ba0d137682f", 
+  "kernel_name": "itorch", 
+  "shell_port": 23795, 
+  "transport": "tcp", 
+  "iopub_port": 31080
+}
