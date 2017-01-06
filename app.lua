@@ -104,11 +104,11 @@ app:match('extract_features', '/extract-features', capture_errors_json(respond_t
 
     os.execute('echo "--------------- STARTING THE FEATURE EXTRACTOR ---------------"')
 
-    features = extract_features('pretrained/resnet-200.t7', data_folder:sub(1, -2), 1)
-    os.execute('echo "FEATURES BELOW:"')
-    os.execute('echo ' .. serializeTable(features))
+    features = extract_features('pretrained/resnet-200.t7', data_folder:sub(1, -2), 8)
+    -- os.execute('echo "FEATURES BELOW:"')
+    -- print(serializeTable(features))
 
-    return { json = {features = to_json(features) }}
+    return { json = {result = features}}
   end)
 })))
 

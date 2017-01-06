@@ -11,7 +11,6 @@ local feature_extractor = {}
 function feature_extractor.extract_features(model_name, dir_path, batch_size)
     -- get the list of files
     local list_of_filenames = {}
-    local batch_size = 1
 
     -- for i=1, #list_of_base64_images do
     --     f = list_of_base64_images[i]
@@ -91,8 +90,7 @@ function feature_extractor.extract_features(model_name, dir_path, batch_size)
 
     end
 
-    -- return {features=features, image_list=list_of_filenames}
-    return {features=torch.serialize(features), image_list=list_of_filenames}
+    return {features=torch.totable(features), image_list=list_of_filenames}
 end
 
 return feature_extractor
