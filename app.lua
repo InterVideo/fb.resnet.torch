@@ -6,7 +6,10 @@ local capture_errors_json = require('lapis.application').capture_errors_json
 local to_json = require('lapis.util').to_json
 local app = lapis.Application()
 
+require('svm')
+
 local extract_features = require('./pretrained/feature-extractor').extract_features
+local prepare_data = require('./svm/data_preparation').prepare_data
 
 function saveBase64AsImage(file_name, img_base64, dir_path)
   os.execute(
@@ -80,18 +83,11 @@ app:match('extract_features', '/extract-features', capture_errors_json(respond_t
   end,
   POST = json_params(function(self)
 
-    -- print("SHIIIIIIIIIIIIIT")
-    -- print(serializeTable(self.params.json))
-    -- print("SHIIIIIIIIIIIIIT")
-    -- print(serializeTable(self.params))
-    -- os.execute('echo ' .. serializeTable(self.params) .. ' > test_params.txt')
-    -- os.execute('echo STARTING SERIALIZATION')
-    -- os.execute('echo ' .. serializeTable(self.params))
-
     local username = self.params.username
+    local object_name = self.params.object_name
     local images = self.params.images
 
-    local data_folder = 'data/' .. username .. '/'
+    local data_folder = 'data/' .. username .. '-' .. object_name .. '/'
     os.execute('rm -rf ' .. data_folder)
     os.execute('mkdir ' .. data_folder)
 
@@ -101,14 +97,42 @@ app:match('extract_features', '/extract-features', capture_errors_json(respond_t
       saveBase64AsImage(k, v, data_folder)
     end
 
-
     os.execute('echo "--------------- STARTING THE FEATURE EXTRACTOR ---------------"')
 
     features = extract_features('pretrained/resnet-200.t7', data_folder:sub(1, -2), 8)
-    -- os.execute('echo "FEATURES BELOW:"')
-    -- print(serializeTable(features))
+
+
+    os.execute('echo "--------------- PREPARING SVM DATA ---------------"')
+
+    local data_folder = 'svm/data/' .. username .. '-' .. object_name .. '/'
+    os.execute('rm -rf ' .. data_folder)
+    os.execute('mkdir ' .. data_folder)
+
+    local svm_data = {}
+    for i = 1, #features.image_list do
+      svm_data[i] = {features.features[i], i == 1 and 1 or -1}
+    end
+
+    svm_data_file = io.open(data_folder .. 'data', 'w')
+    svm_data_file:write(prepare_data(svm_data))
 
     return { json = {result = features}}
+  end)
+})))
+
+app:match('run_svm', '/run-svm', capture_errors_json(respond_to({
+  POST = json_params(function(self)
+    local username = self.params.username
+    local object_name = self.params.object_name
+    local test_data = self.params.test_data
+
+    local file_location = 'svm/data/' .. username .. '-' .. object_name .. '/data'
+
+    data = svm.ascread(file_location)
+    model = liblinear.train(data)
+    label, accuracy, decision = libsvm.predict(test_data, model)
+
+    return { json = {result = {labels=label, accuracy=accuracy, decision=decision}} }
   end)
 })))
 
